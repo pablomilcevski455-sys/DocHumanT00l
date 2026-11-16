@@ -1,0 +1,837 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>DocHumanTool</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: página de venda em coluna única, com o configurador ao vivo (formulário + celular) no centro */
+:root{
+  --bg:#f5f7f3; --surface:#ffffff; --surface2:#ecf0ea; --ink:#0d1b2a; --muted:#4a5c6a; --line:#d5dcd2;
+  --accent:#15803d; --accent-ink:#ffffff; --accent-soft:#dcf5e3; --warn:#b91c1c; --warn-soft:#fde8e8;
+  --f-display:'Bricolage Grotesque','Inter',system-ui,sans-serif; --f-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  /* celular: ilustra a tela real do portal e mantém a própria paleta nos dois temas */
+  --scr-bg:#f3f6fa; --scr-card:#ffffff; --scr-line:#d3dce6; --scr-ink:#0f172a; --scr-mute:#64748b; --bezel:#16253a;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#08131f; --surface:#0f2133; --surface2:#142a40; --ink:#eef4f8; --muted:#9db2c4; --line:#1f3b55;
+    --accent:#4ade80; --accent-ink:#06210f; --accent-soft:#12331f; --warn:#f87171; --warn-soft:#3a1717; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#08131f; --surface:#0f2133; --surface2:#142a40; --ink:#eef4f8; --muted:#9db2c4; --line:#1f3b55;
+  --accent:#4ade80; --accent-ink:#06210f; --accent-soft:#12331f; --warn:#f87171; --warn-soft:#3a1717; color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55;
+  padding-block:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1120px;margin-inline:auto}
+h1,h2,h3{font-family:var(--f-display);line-height:1.08;letter-spacing:-.02em;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.2rem,5.6vw,3.9rem);font-weight:800}
+h2{font-size:clamp(1.7rem,3.6vw,2.5rem);font-weight:800}
+h3{font-size:1.2rem;font-weight:700;letter-spacing:-.01em}
+p{margin:0}
+a{color:inherit}
+.eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.muted{color:var(--muted)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px}
+
+/* topo */
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:20px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:800;font-size:1.15rem;text-decoration:none}
+.mark{width:34px;height:34px;border-radius:10px;background:var(--accent);display:grid;place-items:center;color:var(--accent-ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 22px;border-radius:12px;font:600 1rem var(--f-body);
+  text-decoration:none;border:1.5px solid transparent;cursor:pointer;transition:transform .15s,background .15s,border-color .15s}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{transform:translateY(-1px)}
+.btn-ghost{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn-ghost:hover{border-color:var(--accent)}
+.btn-sm{min-height:42px;padding:8px 16px;font-size:.92rem}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center;padding-block:40px 72px}
+.hero p.lead{font-size:1.2rem;color:var(--muted);margin-top:22px;max-width:34em}
+.hero .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.hero .proof{margin-top:28px;font-size:.95rem;color:var(--muted);max-width:34em;border-left:3px solid var(--accent);padding-left:14px}
+.hero-phone{display:flex;justify-content:center}
+
+/* celular */
+.phone{width:min(100%,300px);aspect-ratio:300/590;border-radius:42px;background:var(--bezel);padding:9px;box-shadow:0 30px 60px rgba(8,19,31,.28);position:relative;flex:none}
+.phone .notch{position:absolute;top:15px;left:50%;transform:translateX(-50%);width:84px;height:18px;border-radius:10px;background:var(--bezel);z-index:2}
+.scr{height:100%;border-radius:34px;background:var(--scr-bg);color:var(--scr-ink);padding:40px 14px 14px;display:flex;flex-direction:column;gap:10px;overflow:hidden;font-family:var(--f-body)}
+.ph-head{display:flex;align-items:center;gap:10px}
+.ph-logo{width:34px;height:34px;border-radius:10px;background:var(--brand,#16a34a);color:#fff;display:grid;place-items:center;font:800 16px var(--f-display);flex:none}
+.ph-head b{display:block;font-size:14px;line-height:1.2;overflow-wrap:anywhere}
+.ph-head small{font-size:11px;color:var(--scr-mute)}
+.ph-timer{background:var(--brand,#16a34a);color:#fff;border-radius:14px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:600}
+.ph-timer b{font-size:19px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.ph-docs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1;min-height:0;scrollbar-width:none}
+.ph-docs::-webkit-scrollbar{display:none}
+.ph-docs li{background:var(--scr-card);border:1px solid var(--scr-line);border-radius:11px;padding:8px 10px;display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;min-height:38px}
+.ph-docs li span{flex:1;min-width:0;overflow-wrap:anywhere}
+.ph-docs em{font-style:normal;font-size:10.5px;font-weight:700;border-radius:20px;padding:3px 8px;flex:none}
+.ph-docs .ok{background:#dcfce7;color:#15803d}
+.ph-docs .wait{background:#e5eaf0;color:#475569}
+.ph-docs .dot{width:8px;height:8px;border-radius:50%;background:var(--brand,#16a34a);flex:none}
+.ph-foot{background:var(--scr-card);border:1px solid var(--scr-line);border-radius:12px;padding:9px 10px;font-size:10.5px;line-height:1.4;color:var(--scr-mute)}
+.ph-foot b{color:var(--scr-ink);font-weight:600;overflow-wrap:anywhere}
+.ph-foot .ph-ex{opacity:.55}
+
+/* seções */
+section{padding-block:72px}
+.sec-head{max-width:40em;margin-bottom:36px;display:flex;flex-direction:column;gap:12px}
+.sec-head p{color:var(--muted);font-size:1.1rem}
+.features{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.feat{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.feat svg{width:30px;height:30px;color:var(--accent)}
+.feat p{color:var(--muted);font-size:.97rem}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;list-style:none;padding:0;margin:0}
+.steps li{border-top:2px solid var(--accent);padding-top:16px;display:flex;flex-direction:column;gap:8px}
+.steps b{font-family:var(--f-display);font-size:1.15rem}
+.steps span{color:var(--muted);font-size:.97rem}
+
+/* configurador */
+.conf{background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:clamp(18px,4vw,40px);display:grid;grid-template-columns:1fr 320px;gap:40px;align-items:start}
+.form{display:flex;flex-direction:column;gap:22px;min-width:0}
+.field{display:flex;flex-direction:column;gap:7px}
+.field>label,.field>.lbl{font-weight:600;font-size:.95rem}
+.hint{font-size:.85rem;color:var(--muted)}
+input[type=text],input[type=email],input[type=tel]{width:100%;min-height:50px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);
+  background:var(--bg);color:var(--ink);font:500 1rem var(--f-body)}
+textarea{width:100%;min-height:110px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:500 1rem/1.5 var(--f-body);resize:vertical}
+input:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.logo{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+.logo svg{flex:none;display:block}
+.logo .wm{display:flex;flex-direction:column;line-height:1;font-family:var(--f-display)}
+.logo .wm b{font-weight:800;font-size:1.12rem;letter-spacing:-.01em}
+.logo .wm small{font-weight:600;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.lg-bg{fill:var(--accent)}.lg-fg{fill:var(--accent-ink)}.lg-st{stroke:var(--accent-ink)}
+.counter{font-size:.82rem;color:var(--muted);text-align:right}
+input[type=number]{width:100%;min-height:50px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:500 1rem var(--f-body)}
+.calc{display:grid;grid-template-columns:1fr 1.15fr;gap:32px;background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:clamp(18px,4vw,38px);align-items:center}
+.calc-in{display:flex;flex-direction:column;gap:18px}
+.bars{display:flex;flex-direction:column;gap:14px}
+.bar-row{display:flex;flex-direction:column;gap:6px}
+.bar-row .lab{display:flex;justify-content:space-between;gap:12px;font-weight:600;font-size:.95rem}
+.bar-row .lab span:last-child{font-variant-numeric:tabular-nums}
+.track{height:18px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.fill{height:100%;border-radius:99px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.fill.bad{background:#dc2626;opacity:.85}.fill.good{background:var(--accent)}
+.result{margin-top:8px;padding:18px 20px;border-radius:18px;background:var(--accent-soft);display:flex;flex-direction:column;gap:4px}
+.result b{font-family:var(--f-display);font-size:clamp(1.6rem,4vw,2.3rem);letter-spacing:-.02em;line-height:1.1}
+.result span{color:var(--muted);font-size:.95rem}
+.steps.four{grid-template-columns:repeat(4,1fr)}
+.steps .n{font-family:var(--f-display);font-weight:800;font-size:.9rem;color:var(--accent);letter-spacing:.1em}
+.story{display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:start;background:var(--surface2);border-radius:26px;padding:clamp(24px,5vw,48px)}
+.story p{color:var(--muted);margin-top:14px;font-size:1.05rem}
+.story p strong{color:var(--ink)}
+.facts{display:flex;flex-direction:column;gap:14px}
+.fact{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 20px}
+.fact b{display:block;font-family:var(--f-display);font-size:1.8rem;letter-spacing:-.02em;line-height:1.1;color:var(--accent)}
+.fact span{color:var(--muted);font-size:.92rem}
+.faq{display:flex;flex-direction:column;gap:10px;max-width:46em}
+.faq details{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:0 20px}
+.faq summary{cursor:pointer;padding:16px 0;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:12px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font-size:1.3rem;line-height:1;color:var(--accent)}
+.faq details[open] summary::after{content:"\2212"}
+.faq details p{padding-bottom:16px;color:var(--muted)}
+.final{background:var(--accent);color:var(--accent-ink);border-radius:26px;padding:clamp(28px,6vw,56px);display:flex;flex-direction:column;gap:18px;align-items:flex-start}
+.final h2{max-width:20em}
+.final p{opacity:.9;max-width:36em;font-size:1.1rem}
+.final .btn-primary{background:var(--accent-ink);color:var(--accent)}
+.final .btn-ghost{border-color:currentColor;color:inherit}
+input[aria-invalid=true]{border-color:var(--warn)}
+.err{color:var(--warn);font-size:.85rem;font-weight:600;min-height:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0;width:100%;height:100%;cursor:pointer;margin:0}
+.chip span{display:inline-flex;align-items:center;min-height:42px;padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--bg);font-weight:600;font-size:.92rem;transition:background .15s,border-color .15s}
+.chip input:checked+span{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
+.chip input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
+.sw{display:flex;gap:10px;flex-wrap:wrap}
+.sw label{position:relative;width:44px;height:44px}
+.sw input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;margin:0}
+.sw span{display:block;width:100%;height:100%;border-radius:50%;border:3px solid transparent;box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+.sw input:checked+span{border-color:var(--ink)}
+.sw input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
+.preview-col{position:sticky;top:20px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.preview-col .tag{font-size:.8rem;color:var(--muted);text-align:center}
+.actions{display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--line);padding-top:22px}
+.actions .btns{display:flex;flex-wrap:wrap;gap:12px}
+.actions p{font-size:.9rem;color:var(--muted)}
+
+/* planos */
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:stretch}
+.plan{border:1px solid var(--line);background:var(--surface);border-radius:22px;padding:32px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.plan.main{border:2px solid var(--accent)}
+.price{font-family:var(--f-display);font-weight:800;font-size:2.2rem;letter-spacing:-.02em}
+.price span{font:500 1rem var(--f-body);color:var(--muted);margin-left:4px}
+.plan ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+.plan li{display:flex;gap:10px;align-items:flex-start;font-size:.98rem}
+.plan li svg{width:20px;height:20px;color:var(--accent);flex:none;margin-top:3px}
+.plan .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:auto;padding-top:6px}
+
+.badge{align-self:flex-start;background:var(--accent);color:var(--accent-ink);font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 12px;border-radius:99px}
+.founder{display:flex;gap:16px;align-items:center;background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:18px;padding:18px 22px;margin-bottom:20px}
+.founder svg{width:36px;height:36px;color:var(--accent);flex:none}
+.founder b{display:block;font-family:var(--f-display);font-size:1.15rem}
+.founder p{color:var(--muted);font-size:.97rem;margin-top:2px}
+.custom{margin-top:20px;border:1.5px dashed var(--line);border-radius:18px;padding:20px 24px;display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:space-between}
+.custom p{margin-top:4px;max-width:36em;font-size:.97rem}
+.plan .eyebrow.sub{color:var(--muted)}
+
+/* pagamento Pix */
+dialog#pay{border:0;border-radius:24px;padding:0;width:min(94vw,440px);max-height:92vh;background:var(--surface);color:var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.45)}
+dialog#pay::backdrop{background:rgba(8,19,31,.6);backdrop-filter:blur(3px)}
+dialog#pay[open]{animation:pop .3s ease-out}
+.pay-in{padding:26px 22px 24px;display:flex;flex-direction:column;gap:14px;position:relative}
+.pay-x{position:absolute;top:10px;right:10px;width:44px;height:44px;border-radius:50%;border:0;background:var(--surface2);color:var(--ink);font-size:1.6rem;line-height:1;cursor:pointer}
+.pay-val{font:800 2rem var(--f-display);color:var(--accent);letter-spacing:-.02em}
+.pay-qr{display:flex;justify-content:center}
+#pay-qr{background:#fff;padding:12px;border-radius:16px;line-height:0}
+#pay-qr img,#pay-qr canvas{max-width:100%;height:auto}
+.pay-steps{margin:0;padding-left:20px;color:var(--muted);font-size:.93rem;display:flex;flex-direction:column;gap:4px}
+#pay-code{font:500 .8rem/1.4 ui-monospace,Menlo,Consolas,monospace;min-height:84px}
+
+/* segurança + sobre */
+.band{background:var(--surface2);border-radius:26px;padding:clamp(24px,5vw,48px);display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center}
+.band svg{width:64px;height:64px;color:var(--accent)}
+.band p{color:var(--muted);margin-top:10px;max-width:42em}
+.about{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+.about p{color:var(--muted);margin-top:14px;font-size:1.05rem}
+.contact{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:28px;display:flex;flex-direction:column;gap:14px}
+.copyrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.num{font:700 1.4rem var(--f-display);user-select:all}
+footer{padding-block:36px 48px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--line)}
+
+/* controle deslizante */
+.slide{display:flex;align-items:center;gap:16px}
+.slide output{min-width:76px;text-align:right;font:800 1.15rem var(--f-display);color:var(--accent);font-variant-numeric:tabular-nums}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;min-width:0;height:44px;background:transparent;margin:0;cursor:pointer;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:12px;border-radius:99px;background:linear-gradient(to right,var(--accent) var(--p,0%),var(--surface2) var(--p,0%));border:1px solid var(--line)}
+input[type=range]::-moz-range-track{height:12px;border-radius:99px;background:var(--surface2);border:1px solid var(--line)}
+input[type=range]::-moz-range-progress{height:12px;border-radius:99px;background:var(--accent)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:32px;height:32px;margin-top:-11px;border-radius:50%;background:var(--accent);border:4px solid var(--surface);box-shadow:0 2px 8px rgba(8,19,31,.35);transition:transform .15s}
+input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--accent);border:4px solid var(--surface);box-shadow:0 2px 8px rgba(8,19,31,.35);transition:transform .15s}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.2)}
+input[type=range]:active::-moz-range-thumb{transform:scale(1.2)}
+input[type=range]:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:12px}
+
+/* animações de clique */
+.btn{position:relative;overflow:hidden}
+.btn:active{transform:scale(.95)}
+.ripple{position:absolute;border-radius:50%;background:currentColor;opacity:.28;transform:scale(0);animation:rip .6s ease-out forwards;pointer-events:none}
+@keyframes rip{to{transform:scale(1);opacity:0}}
+@keyframes pop{0%{transform:scale(.88)}55%{transform:scale(1.1)}100%{transform:scale(1)}}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.06)}100%{transform:scale(1)}}
+@keyframes drop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes ok{0%{transform:scale(1)}30%{transform:scale(1.18)}60%{transform:scale(.96)}100%{transform:scale(1)}}
+.chip input:checked+span{animation:pop .3s ease-out}
+.sw input:checked+span{animation:pop .3s ease-out}
+.chip:active span{transform:scale(.94)}
+.faq details[open] p{animation:drop .3s ease-out}
+.faq summary{transition:color .15s}
+.faq summary:active{transform:scale(.99)}
+.result.bump b{animation:bump .3s ease-out}
+.copied{animation:ok .45s ease-out}
+.feat{transition:transform .2s,border-color .2s}
+.feat:active{transform:scale(.98);border-color:var(--accent)}
+@media (prefers-reduced-motion:reduce){.ripple,.chip input:checked+span,.sw input:checked+span,.faq details[open] p,.result.bump b,.ph-docs li,.copied{animation:none}.btn:active,.chip:active span{transform:none}}
+
+@media (max-width:920px){
+  .hero{grid-template-columns:1fr;gap:36px;padding-block:24px 48px}
+  .features{grid-template-columns:1fr 1fr}
+  .conf{grid-template-columns:1fr}
+  .preview-col{position:static;order:-1}
+  .plans,.about{grid-template-columns:1fr}
+  .steps,.steps.four{grid-template-columns:1fr 1fr}
+  .calc,.story{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  body{font-size:16px}
+  .features,.row2,.steps.four,.steps{grid-template-columns:1fr}
+  .band{grid-template-columns:1fr}
+  .top .btn-sm{display:none}
+  section{padding-block:52px}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.chip span{transition:none}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <a class="brand logo" href="#topo" id="topo">
+      <svg width="40" height="40" viewBox="0 0 48 48" aria-hidden="true"><rect class="lg-bg" width="48" height="48" rx="13"/><path class="lg-fg" d="M14 11h14l8 8v18a2 2 0 01-2 2H14a2 2 0 01-2-2V13a2 2 0 012-2z" opacity=".95"/><path d="M28 11v6a2 2 0 002 2h6" fill="none" class="lg-st" stroke-width="0" /><path d="M28 11l8 8h-6a2 2 0 01-2-2z" class="lg-bg" opacity=".35"/><path d="M18 27.5l4.2 4.2L30.5 23" fill="none" stroke="var(--accent)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="wm"><b>DocHumanTool</b><small>Documentos certos de primeira</small></span>
+    </a>
+    <a class="btn btn-ghost btn-sm" data-wa="geral" href="#" target="_blank" rel="noopener">Falar no WhatsApp</a>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div>
+        <p class="eyebrow">Para times de RH</p>
+        <h1 style="margin-top:16px">Pare de pedir documento por WhatsApp. Receba tudo em um link só.</h1>
+        <p class="lead">O DocHumanTool é o portal onde o candidato envia todos os documentos admissionais pelo celular. Ele recusa o arquivo errado, avisa o prazo e entrega a pasta pronta para o RH. No meu setor, <strong>mais de 12 horas de trabalho viraram menos de 2</strong>.</p>
+        <div class="cta">
+          <a class="btn btn-primary" href="#configurar">Quero o meu portal</a>
+          <a class="btn btn-ghost" data-demo href="#" target="_blank" rel="noopener">Ver demonstração</a>
+        </div>
+        <p class="proof">Em uso todos os dias, na minha empresa e em outras empresas.</p>
+      </div>
+      <div class="hero-phone" id="hero-phone" aria-label="Exemplo da tela do portal no celular"></div>
+    </div>
+
+    <section id="tempo" aria-labelledby="t-tempo" style="padding-top:0">
+      <div class="sec-head">
+        <p class="eyebrow">Tempo é dinheiro</p>
+        <h2 id="t-tempo">Quanto o seu RH perde pedindo documento?</h2>
+        <p>No meu setor, o processo pelo WhatsApp tomava mais de 12 horas. Com o portal, passou para menos de 2. Coloque os seus números e veja o que isso muda.</p>
+      </div>
+      <div class="calc">
+        <div class="calc-in">
+          <div class="field">
+            <label for="c-h">Horas por mês que o RH gasta pedindo e conferindo documentos</label>
+            <div class="slide"><input type="range" id="c-h" min="1" max="200" step="1" value="12"><output id="o-h" for="c-h">12 h</output></div>
+          </div>
+          <div class="field">
+            <label for="c-v">Quanto custa a hora do RH</label>
+            <div class="slide"><input type="range" id="c-v" min="10" max="200" step="5" value="30"><output id="o-v" for="c-v">R$ 30</output></div>
+          </div>
+          <p class="hint">Estimativa com a mesma proporção do meu setor (de 12 horas para 2 horas). O resultado na sua empresa depende do seu processo.</p>
+        </div>
+        <div>
+          <div class="bars" aria-live="polite">
+            <div class="bar-row"><div class="lab"><span>Pelo WhatsApp</span><span id="c-antes"></span></div><div class="track"><div class="fill bad" id="b-antes" style="width:100%"></div></div></div>
+            <div class="bar-row"><div class="lab"><span>Com o DocHumanTool</span><span id="c-depois"></span></div><div class="track"><div class="fill good" id="b-depois" style="width:17%"></div></div></div>
+          </div>
+          <div class="result" aria-live="polite">
+            <b id="c-eco">Você recupera 10 horas por mês</b>
+            <span id="c-din"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="t-feat" style="padding-top:24px">
+      <div class="sec-head">
+        <p class="eyebrow">O que o portal faz</p>
+        <h2 id="t-feat">Cada problema do WhatsApp virou uma função</h2>
+      </div>
+      <div class="features">
+        <article class="feat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/><path d="M8.5 11l1.8 1.8 3.2-3.6"/></svg>
+          <h3>Recusa o que está errado</h3>
+          <p>A pré-checagem automática barra o documento ilegível ou colocado no lugar de outro, antes de chegar ao RH.</p>
+        </article>
+        <article class="feat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4.5l3 1.8"/><path d="M9.5 2.5h5"/></svg>
+          <h3>Prazo com contagem regressiva</h3>
+          <p>O candidato vê quanto tempo falta para enviar tudo. Chega de cobrar documento mensagem por mensagem.</p>
+        </article>
+        <article class="feat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8.5 9.5h7M8.5 12.5h4"/></svg>
+          <h3>Como conseguir, embaixo de cada um</h3>
+          <p>O passo a passo para tirar PIS e outros documentos aparece junto do item, e há um chat para tirar dúvidas.</p>
+        </article>
+        <article class="feat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 012-2h4l2 2.5h8a2 2 0 012 2V18a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><rect x="9" y="11.5" width="6" height="5" rx="1"/><path d="M10.2 11.5V10a1.8 1.8 0 013.6 0v1.5"/></svg>
+          <h3>Pasta exclusiva</h3>
+          <p>O portal gera uma pasta que fica somente com o candidato e o RH, e não solta em conversa nenhuma.</p>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="t-como">
+      <div class="sec-head">
+        <p class="eyebrow">Como funciona</p>
+        <h2 id="t-como">Simples para o RH e para o candidato</h2>
+        <p>Ninguém precisa instalar nada. O candidato só abre um link no celular.</p>
+      </div>
+      <ol class="steps four">
+        <li><span class="n">1</span><b>Você descreve</b><span>Diz quais documentos precisa, o e-mail que recebe as pastas e o WhatsApp do RH. Pode escrever à vontade, do seu jeito.</span></li>
+        <li><span class="n">2</span><b>Eu monto o seu portal</b><span>Crio o portal com o nome, a cor e a lista de documentos da sua empresa e envio o link para você.</span></li>
+        <li><span class="n">3</span><b>O candidato envia</b><span>Abre o link, vê o que falta, o prazo e como conseguir cada documento, e envia pelo celular.</span></li>
+        <li><span class="n">4</span><b>O RH recebe a pasta pronta</b><span>Documentos conferidos e organizados, no e-mail que você escolheu. Sem cobrar mensagem por mensagem.</span></li>
+      </ol>
+      <div class="btns" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:28px">
+        <a class="btn btn-primary" href="#configurar">Descrever o meu portal</a>
+        <a class="btn btn-ghost" data-demo href="#" target="_blank" rel="noopener">Ver o portal funcionando</a>
+      </div>
+    </section>
+
+    <section aria-labelledby="t-hist" style="padding-top:24px">
+      <div class="story">
+        <div>
+          <p class="eyebrow">Quem criou</p>
+          <h2 id="t-hist" style="margin-top:12px">Eu fazia tudo pelo WhatsApp. Então automatizei.</h2>
+          <p>Eu sou o <strong>Pablo</strong>, estudante de T.I. e trabalho no RH. Todos os dias eu pedia as mesmas documentações e explicava como conseguir cada uma, de novo e de novo, pelo WhatsApp. Depois eu analisava uma por uma para ver se estava legível e ainda tinha que salvar cada uma em uma pasta. Esse processo levava <strong>mais de 12 horas</strong>, somando o time da manhã e os aprendizes da tarde.</p>
+          <p>Comecei a pesquisar formas de automatizar isso e encontrei empresas de T.I. cobrando <strong>no mínimo R$ 30.000</strong>, só pelo desenvolvimento. Então reuni amigos da faculdade para me orientar, estudei com vídeos e muita prática e criei eu mesmo o portal admissional. Resultado: <strong>mais de 12 horas de trabalho por dia viraram menos de 1 hora.</strong></p>
+          <p>Hoje o portal funciona por <strong>assinatura mensal</strong>: você escolhe um plano com o portal personalizado da sua empresa e as atualizações que precisar, com a criação e a configuração do portal já incluídas. Você merece um respiro e um tempo a mais. Eu mesmo converso com você para entender os gargalos do seu setor e desenvolvermos juntos. <a href="#planos" style="color:var(--accent);font-weight:700">Veja os planos</a> ou chama aqui:<a data-wa="geral" href="#" target="_blank" rel="noopener" style="color:var(--accent);font-weight:700">(11) 94035-9927</a></p>
+        </div>
+        <div class="facts">
+          <div class="fact"><b>12h+ → menos de 1h</b><span>de trabalho no meu setor</span></div>
+          <div class="fact"><b>Todos os dias</b><span>em uso na minha empresa e em outras empresas</span></div>
+          <div class="fact"><b>Feito por quem vive o problema</b><span>cada função nasceu de uma dor real do processo</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="configurar" aria-labelledby="t-conf" style="padding-top:24px">
+      <div class="sec-head">
+        <p class="eyebrow">Configure o seu</p>
+        <h2 id="t-conf">Descreva o seu portal e veja como fica</h2>
+        <p>Preencha os dados e liste os documentos que você precisa. A tela ao lado muda conforme você digita. Depois é só enviar para mim.</p>
+      </div>
+      <form class="conf" id="form" novalidate>
+        <div class="form">
+          <div class="field">
+            <label for="f-empresa">Nome da empresa</label>
+            <input type="text" id="f-empresa" autocomplete="organization" placeholder="Ex.: Padaria Santa Clara" maxlength="40">
+            <p class="err" id="e-empresa" role="alert"></p>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label for="f-email">E-mail do RH que recebe as pastas</label>
+              <input type="email" id="f-email" autocomplete="email" placeholder="rh@suaempresa.com.br" inputmode="email">
+              <p class="err" id="e-email" role="alert"></p>
+            </div>
+            <div class="field">
+              <label for="f-whats">WhatsApp do RH</label>
+              <input type="tel" id="f-whats" autocomplete="tel" placeholder="(11) 99999-9999" inputmode="tel">
+              <p class="err" id="e-whats" role="alert"></p>
+            </div>
+          </div>
+          <fieldset class="field" style="border:0;padding:0;margin:0">
+            <legend class="lbl" style="padding:0;font-weight:600;font-size:.95rem">Plano escolhido</legend>
+            <div class="chips" id="planos-chips"></div>
+            <p class="hint">Criação e configuração do portal incluídas em todos os planos.</p>
+          </fieldset>
+          <fieldset class="field" style="border:0;padding:0;margin:0">
+            <legend class="lbl" style="padding:0;font-weight:600;font-size:.95rem">Prazo para o candidato enviar</legend>
+            <div class="chips" id="prazo">
+              <label class="chip"><input type="radio" name="prazo" value="24" checked><span>24 horas</span></label>
+              <label class="chip"><input type="radio" name="prazo" value="48"><span>48 horas</span></label>
+              <label class="chip"><input type="radio" name="prazo" value="72"><span>72 horas</span></label>
+            </div>
+          </fieldset>
+          <fieldset class="field" style="border:0;padding:0;margin:0">
+            <legend class="lbl" style="padding:0;font-weight:600;font-size:.95rem">Cor do portal</legend>
+            <div class="sw" id="cores"></div>
+          </fieldset>
+          <fieldset class="field" style="border:0;padding:0;margin:0">
+            <legend class="lbl" style="padding:0;font-weight:600;font-size:.95rem">Documentos que o candidato envia</legend>
+            <div class="chips" id="docs"></div>
+            <p class="err" id="e-docs" role="alert"></p>
+          </fieldset>
+          <div class="field">
+            <label for="f-lista">Descreva todos os documentos que você precisa</label>
+            <textarea id="f-lista" maxlength="800" placeholder="Um por linha. Ex.:&#10;Exame admissional (ASO)&#10;Certidão de antecedentes&#10;Diploma de curso técnico&#10;Comprovante de vacinação"></textarea>
+            <p class="hint">Falta algum na lista acima? Escreva aqui, um por linha. Eu crio o portal com todos eles.</p>
+          </div>
+          <div class="field">
+            <label for="f-indic">Foi indicado por alguém? (opcional)</label>
+            <input type="text" id="f-indic" placeholder="Nome de quem indicou" maxlength="60">
+            <p class="hint">Quem indicou ganha desconto na mensalidade quando você assina.</p>
+          </div>
+          <div class="field">
+            <label for="f-msg">Mensagem para mim (opcional)</label>
+            <textarea id="f-msg" maxlength="800" placeholder="Conte como é o seu processo: quantos candidatos por mês, regras da empresa, o que mais atrasa, o que você quer no portal..."></textarea>
+            <p class="hint">Eu leio tudo, monto o seu portal e envio para você.</p>
+          </div>
+
+          <div class="actions">
+            <div class="btns">
+              <button type="button" class="btn btn-primary" id="b-pix">Pagar com Pix</button>
+              <a class="btn btn-ghost" id="b-assinar" href="#" target="_blank" rel="noopener">Pedir o meu portal</a>
+              <a class="btn btn-ghost" id="b-enviar" href="#" target="_blank" rel="noopener" hidden>Enviar minha configuração no WhatsApp</a>
+            </div>
+            <p id="assinar-hint"></p>
+          </div>
+        </div>
+
+        <aside class="preview-col" aria-label="Prévia do seu portal">
+          <div id="live"></div>
+          <p class="tag">Prévia ao vivo. Os status dos documentos são só um exemplo.</p>
+        </aside>
+      </form>
+    </section>
+
+    <section id="planos" aria-labelledby="t-planos">
+      <div class="sec-head">
+        <p class="eyebrow">Planos</p>
+        <h2 id="t-planos">Escolha o suporte que acompanha o seu RH</h2>
+        <p>Em todos os planos eu crio e configuro o portal personalizado da sua empresa. O que muda é quantos ajustes você tem depois e o nível de prioridade no suporte.</p>
+      </div>
+      <div class="founder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12v8H4v-8"/><path d="M2 7h20v5H2z"/><path d="M12 20V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+        <div>
+          <b>Indique um amigo e ganhe desconto</b>
+          <p>Indicou outra empresa e ela assinou? Você ganha desconto na sua mensalidade. Na hora de pedir, é só dizer quem indicou.</p>
+        </div>
+      </div>
+      <div class="plans" id="plans"></div>
+      <div class="custom">
+        <div>
+          <h3>Precisa de algo além do portal?</h3>
+          <p class="muted">Automações com n8n, sites e ferramentas internas sob medida. Valor combinado depois que eu entender o projeto.</p>
+        </div>
+        <div class="btns" style="display:flex;flex-wrap:wrap;gap:10px">
+          <a class="btn btn-primary" data-wa="call" href="#" target="_blank" rel="noopener">Agendar uma call</a>
+          <a class="btn btn-ghost" data-wa="geral" href="#" target="_blank" rel="noopener">Chamar no WhatsApp</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="afiliados" aria-labelledby="t-afil" style="padding-top:24px">
+      <div class="story">
+        <div>
+          <p class="eyebrow">Programa de afiliados</p>
+          <h2 id="t-afil" style="margin-top:12px">Indique o DocHumanTool e ganhe 40% de comissão.</h2>
+          <p>Você conhece alguém de RH que ainda pede documento por WhatsApp? Torne-se afiliado, indique o portal e receba <strong>40% de comissão</strong> sobre as vendas que você trouxer.</p>
+          <p>Chame no WhatsApp e eu explico como funciona o programa.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:22px">
+            <a class="btn btn-primary" data-wa="afiliado" href="#" target="_blank" rel="noopener">Quero ser afiliado</a>
+          </div>
+        </div>
+        <div class="facts">
+          <div class="fact"><b>40%</b><span>de comissão nas vendas que você indicar</span></div>
+          <div class="fact"><b>Sem instalar nada</b><span>você indica e eu cuido do portal do cliente</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="t-seg" style="padding-top:24px">
+      <div class="band">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/><rect x="9" y="10.5" width="6" height="5" rx="1"/><path d="M10 10.5V9a2 2 0 014 0v1.5"/></svg>
+        <div>
+          <h2 id="t-seg" style="font-size:clamp(1.5rem,3vw,2rem)">É seguro enviar documentos por aqui?</h2>
+          <p>Sim, e é mais seguro do que o WhatsApp. O portal gera uma pasta exclusiva, com acesso restrito ao candidato e ao RH. Os documentos não ficam espalhados em conversas, grupos e galerias de celular. Se a sua empresa tem exigências de LGPD, conversamos sobre elas antes de ativar.</p>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="t-faq" style="padding-top:24px">
+      <div class="sec-head"><p class="eyebrow">Dúvidas comuns</p><h2 id="t-faq">Antes de decidir</h2></div>
+      <div class="faq">
+        <details><summary>E se o candidato enviar o documento errado?</summary><p>A pré-checagem automática recusa o arquivo ilegível ou colocado no lugar de outro. O candidato corrige na hora, antes de o documento chegar ao RH.</p></details>
+        <details><summary>O candidato precisa de computador?</summary><p>Não. Ele abre o link e envia tudo pelo celular.</p></details>
+        <details><summary>Posso pedir documentos que não estão na lista?</summary><p>Sim. Descreva no formulário todos os documentos que a sua empresa exige. Eu monto o portal com eles.</p></details>
+        <details><summary>Posso ver funcionando antes?</summary><p>Pode. Use o botão "Ver demonstração" para abrir o portal de exemplo e testar como o candidato vê.</p></details>
+        <details><summary>Como funciona o pagamento?</summary><p>É uma assinatura mensal. Você escolhe o plano e paga pelo Pix aqui no site. Depois envia o comprovante pelo WhatsApp e eu ativo o portal.</p></details>
+      </div>
+    </section>
+
+    <section style="padding-top:24px">
+      <div class="final">
+        <h2>Cada hora pedindo documento é uma hora a menos para contratar.</h2>
+        <p>Descreva os documentos que você precisa. Eu crio o seu portal e envio o link.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px">
+          <a class="btn btn-primary" href="#configurar">Quero o meu portal</a>
+          <a class="btn btn-ghost" data-wa="call" href="#" target="_blank" rel="noopener">Agendar uma call</a>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="t-sobre" style="padding-top:24px">
+      <div class="about">
+        <div>
+          <p class="eyebrow">Veja funcionando</p>
+          <h2 id="t-sobre" style="margin-top:12px">Teste você mesmo</h2>
+          <p>Abra o portal de demonstração e envie um documento como o candidato envia. Se preferir conversar antes, chame no WhatsApp ou marque uma call.</p>
+          <p><a href="" id="demo-link" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">Ver a demonstração do portal</a></p>
+        </div>
+        <div class="contact">
+          <h3>Vamos conversar</h3>
+          <p class="muted">Chame no WhatsApp ou marque uma call para contar o que precisa ser automatizado.</p>
+          <div class="copyrow"><span class="num" id="num"></span><button type="button" class="btn btn-ghost btn-sm" id="copy">Copiar número</button></div>
+          <div class="btns" style="display:flex;flex-wrap:wrap;gap:10px">
+            <a class="btn btn-primary" data-wa="geral" href="#" target="_blank" rel="noopener">Chamar no WhatsApp</a>
+            <a class="btn btn-ghost" data-wa="call" href="#" target="_blank" rel="noopener">Agendar uma call</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;justify-content:space-between">
+    <span class="logo"><svg width="30" height="30" viewBox="0 0 48 48" aria-hidden="true"><rect class="lg-bg" width="48" height="48" rx="13"/><path class="lg-fg" d="M14 11h14l8 8v18a2 2 0 01-2 2H14a2 2 0 01-2-2V13a2 2 0 012-2z" opacity=".95"/><path d="M18 27.5l4.2 4.2L30.5 23" fill="none" stroke="var(--accent)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="wm"><b style="font-size:1rem">DocHumanTool</b></span></span>
+    <span>Documentos admissionais para times de RH</span>
+  </footer>
+</div>
+
+<dialog id="pay" aria-labelledby="pay-t">
+  <div class="pay-in">
+    <button type="button" class="pay-x" id="pay-x" aria-label="Fechar">&times;</button>
+    <p class="eyebrow">Pagamento por Pix</p>
+    <h2 id="pay-t" style="font-size:1.5rem;margin-top:6px"></h2>
+    <p class="pay-val" id="pay-val"></p>
+    <p class="hint" id="pay-sub"></p>
+    <div class="pay-qr"><div id="pay-qr" role="img" aria-label="QR Code do Pix"></div></div>
+    <div class="field">
+      <label for="pay-code">Pix copia e cola</label>
+      <textarea id="pay-code" readonly rows="3"></textarea>
+      <button type="button" class="btn btn-primary" id="pay-copy">Copiar código Pix</button>
+    </div>
+    <p class="hint">Ou use a chave Pix (e-mail): <b id="pay-key" style="user-select:all"></b></p>
+    <ol class="pay-steps">
+      <li>Abra o app do seu banco e escolha Pix.</li>
+      <li>Escaneie o QR Code ou cole o código copiado.</li>
+      <li>Depois de pagar, envie o comprovante no WhatsApp. Eu ativo o seu portal.</li>
+    </ol>
+    <a class="btn btn-ghost" id="pay-wa" href="#" target="_blank" rel="noopener">Já paguei, enviar comprovante</a>
+  </div>
+</dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+/* ====== EDITE AQUI ======
+   whatsapp: só números, com 55 + DDD (ex.: 5511999999999)
+   linkAgenda: link do Calendly / Google Agenda. Vazio = o botão abre o WhatsApp pedindo a call.
+   pixChave/pixNome/pixCidade: dados do Pix que recebe os pagamentos pelo site.
+   linkPagamento: link de assinatura (Mercado Pago, Stripe, etc.). Vazio = o pagamento é combinado no WhatsApp.
+   Planos e preços: edite a lista PLANOS logo abaixo. */
+const CONFIG = {
+  whatsapp: '5511940359927',
+  whatsappExibicao: '(11) 94035-9927',
+  linkAgenda: '',
+  linkPagamento: '',
+  pixChave: 'nephles.com@gmail.com',
+  pixNome: 'PABLO MILCEVSKI',
+  pixCidade: 'SAO PAULO',
+  /* Portal vitrine (demonstração). Confirme se o GitHub Pages do repositório está ativado. */
+  portalDemo: 'https://pablomilcevski2.github.io/vitrine-portal-admissionak/'
+};
+
+const PLANOS = [
+  {id:'starter', curto:'Starter', nome:'Starter', sub:'Desenvolvimento + manutenção básica', valor:297, preco:'R$ 297', itens:['Criação e setup do portal personalizado','1 atualização/ajuste por mês','Suporte padrão via WhatsApp']},
+  {id:'growth', curto:'Growth', nome:'Growth / Profissional', sub:'O mais vantajoso', destaque:true, valor:497, preco:'R$ 497', itens:['Criação e setup do portal personalizado','Até 5 atualizações acumulativas, para usar em qualquer período','Suporte prioritário']},
+  {id:'full', curto:'Full', nome:'Full / Ilimitado', sub:'Parceria contínua', valor:797, preco:'R$ 797', itens:['Criação e setup do portal personalizado','Atualizações ilimitadas sob demanda','Prioridade máxima em ajustes de fluxo']}
+];
+
+const DOCS = [
+  ['rg','RG'],['cpf','CPF'],['pis','PIS'],['ctps','Carteira de Trabalho'],['comp','Comprovante de residência'],['foto','Foto 3x4'],
+  ['titulo','Título de eleitor'],['cert','Certidão de nascimento ou casamento'],['res','Certificado de reservista'],
+  ['esc','Comprovante de escolaridade'],['banco','Dados bancários'],['cnh','CNH']
+];
+const PADRAO = ['rg','cpf','pis','ctps','comp','foto'];
+const CORES = [['#16a34a','Verde'],['#2563eb','Azul'],['#7c3aed','Roxo'],['#db2777','Rosa'],['#ea580c','Laranja']];
+
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const digits = s => String(s).replace(/\D/g,'');
+
+function fmtPhone(raw){
+  let d = digits(raw);
+  if (d.startsWith('55') && d.length > 11) d = d.slice(2);
+  if (d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+  if (d.length === 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+  return raw.trim();
+}
+
+function phoneHTML(d){
+  const nome = d.empresa || 'Sua Empresa';
+  const ini = esc((nome.trim()[0] || 'S').toUpperCase());
+  const todos = d.docs.concat(d.extras || []);
+  const rows = todos.map((n,i) => `<li><i class="dot"></i><span>${esc(n)}</span><em class="${i<2?'ok':'wait'}">${i<2?'Enviado':'Pendente'}</em></li>`).join('')
+    || '<li><span>Escolha ao menos um documento</span></li>';
+  const email = d.email ? `<b>${esc(d.email)}</b>` : `<b class="ph-ex">rh@suaempresa.com.br</b>`;
+  const wh = d.whats ? `<b>${esc(d.whats)}</b>` : `<b class="ph-ex">(11) 99999-9999</b>`;
+  return `<div class="phone" style="--brand:${d.cor}"><div class="notch"></div><div class="scr">
+    <div class="ph-head"><span class="ph-logo">${ini}</span><div><b>${esc(nome)}</b><small>Documentos admissionais</small></div></div>
+    <div class="ph-timer"><span>Prazo para enviar</span><b>${d.prazo}:00:00</b></div>
+    <ul class="ph-docs">${rows}</ul>
+    <div class="ph-foot">Pasta enviada para<br>${email}<br>Dúvidas com o RH: ${wh}</div>
+  </div></div>`;
+}
+
+/* monta controles */
+$('#docs').innerHTML = DOCS.map(([id,n]) => `<label class="chip"><input type="checkbox" name="doc" value="${id}" ${PADRAO.includes(id)?'checked':''}><span>${n}</span></label>`).join('');
+const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+$('#plans').innerHTML = PLANOS.map(p => `<article class="plan${p.destaque ? ' main' : ''}">
+  ${p.destaque ? '<span class="badge">Mais vantajoso</span>' : ''}
+  <div><p class="eyebrow sub">${esc(p.sub)}</p><h3 style="margin-top:8px">${esc(p.nome)}</h3></div>
+  <p class="price">${esc(p.preco)}<span>por mês</span></p>
+  <ul>${p.itens.map(t => `<li>${CHECK}${esc(t)}</li>`).join('')}</ul>
+  <div class="btns"><button type="button" class="btn btn-primary" data-pagar="${p.id}">Pagar com Pix</button><a class="btn btn-ghost" href="#configurar" data-plano="${p.id}">Configurar portal</a></div>
+</article>`).join('');
+$('#planos-chips').innerHTML = PLANOS.map(p => `<label class="chip"><input type="radio" name="plano" value="${p.id}" ${p.destaque ? 'checked' : ''}><span>${esc(p.curto)} · ${esc(p.preco)}/mês</span></label>`).join('');
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-plano]'); if (!a) return;
+  const r = document.querySelector(`input[name=plano][value="${a.dataset.plano}"]`);
+  if (r){ r.checked = true; update(); }
+});
+$('#cores').innerHTML = CORES.map(([c,n],i) => `<label title="${n}"><input type="radio" name="cor" value="${c}" ${i===0?'checked':''} aria-label="${n}"><span style="background:${c}"></span></label>`).join('');
+
+function read(){
+  const f = $('#form');
+  const docIds = $$('input[name=doc]:checked').map(i => i.value);
+  return {
+    empresa: $('#f-empresa').value.trim(),
+    emailRaw: $('#f-email').value.trim(),
+    email: $('#f-email').value.trim(),
+    whatsRaw: $('#f-whats').value,
+    whats: $('#f-whats').value.trim() ? fmtPhone($('#f-whats').value) : '',
+    prazo: f.elements.prazo.value,
+    cor: f.elements.cor.value,
+    plano: f.elements.plano.value,
+    docs: DOCS.filter(([id]) => docIds.includes(id)).map(([,n]) => n),
+    extras: $('#f-lista').value.split('\n').map(s => s.replace(/^[\s\-•*\d.)]+/, '').trim()).filter(Boolean).slice(0, 30),
+    lista: $('#f-lista').value.trim(),
+    indic: $('#f-indic').value.trim(),
+    msg: $('#f-msg').value.trim()
+  };
+}
+
+const waLink = msg => `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`;
+const MSG_GERAL = 'Olá Pablo! Vi o DocHumanTool e quero conversar sobre automação. O que eu preciso automatizar é: ';
+const MSG_CALL = 'Olá Pablo! Quero agendar uma call para falar sobre automação e o DocHumanTool.';
+const MSG_AFILIADO = 'Olá Pablo! Quero ser afiliado do DocHumanTool e ganhar 40% de comissão. Como funciona?';
+
+function msgAssinar(d){
+  const pl = PLANOS.find(p => p.id === d.plano) || PLANOS[1];
+  let m = `Olá Pablo! Quero o meu portal DocHumanTool.\n\nEmpresa: ${d.empresa}\nE-mail do RH (recebe as pastas): ${d.email}\nWhatsApp do RH: ${d.whats}\nPrazo de envio: ${d.prazo} horas\nCor: ${d.cor}\nPlano: ${pl.nome} (${pl.preco}/mês)`;
+  if (d.indic) m += `\nIndicado por: ${d.indic}`;
+  if (d.docs.length) m += `\n\nDocumentos da lista: ${d.docs.join(', ')}`;
+  if (d.extras.length) m += `\n\nOutros documentos que preciso:\n${d.extras.map(x => '- ' + x).join('\n')}`;
+  if (d.msg) m += `\n\nMensagem:\n${d.msg}`;
+  return m;
+}
+
+function update(){
+  const d = read();
+  $('#live').innerHTML = phoneHTML(d);
+  const pagar = !!CONFIG.linkPagamento;
+  $('#b-assinar').href = pagar ? CONFIG.linkPagamento : waLink(msgAssinar(d));
+  $('#b-enviar').href = waLink(msgAssinar(d));
+  $('#b-enviar').hidden = !pagar;
+  $('#assinar-hint').textContent = pagar
+    ? 'Depois do pagamento, envie a sua configuração por WhatsApp. Eu ativo o portal e mando o link.'
+    : 'Pague pelo Pix aqui no site e envie o comprovante no WhatsApp. Eu ativo o portal e mando o link para você.';
+}
+
+function validar(){
+  const d = read();
+  const erros = {};
+  if (!d.empresa) erros.empresa = 'Informe o nome da empresa.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.emailRaw)) erros.email = 'Informe um e-mail válido, como rh@suaempresa.com.br.';
+  let w = digits(d.whatsRaw); if (w.startsWith('55') && w.length > 11) w = w.slice(2);
+  if (w.length < 10 || w.length > 11) erros.whats = 'Informe o DDD e o número, como (11) 99999-9999.';
+  if (!d.docs.length && !d.extras.length) erros.docs = 'Escolha ao menos um documento ou descreva os que você precisa.';
+  ['empresa','email','whats','docs'].forEach(k => {
+    $('#e-'+k).textContent = erros[k] || '';
+    const inp = $('#f-'+k); if (inp) inp.setAttribute('aria-invalid', erros[k] ? 'true' : 'false');
+  });
+  const primeiro = Object.keys(erros)[0];
+  if (primeiro){ const alvo = primeiro === 'docs' ? $('#docs input') : $('#f-'+primeiro); alvo && alvo.focus(); }
+  return !primeiro;
+}
+
+/* ===== Pix copia e cola (BR Code estático com valor) ===== */
+function tlv(id, v){ return id + String(v.length).padStart(2,'0') + v; }
+function crc16(str){
+  let c = 0xFFFF;
+  for (let i = 0; i < str.length; i++){ c ^= str.charCodeAt(i) << 8; for (let j = 0; j < 8; j++) c = (c & 0x8000) ? ((c << 1) ^ 0x1021) & 0xFFFF : (c << 1) & 0xFFFF; }
+  return c.toString(16).toUpperCase().padStart(4,'0');
+}
+function pixPayload(valor){
+  const sem = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9 ]/g,'').toUpperCase();
+  const corpo = tlv('00','01') + tlv('01','11')
+    + tlv('26', tlv('00','br.gov.bcb.pix') + tlv('01', CONFIG.pixChave))
+    + tlv('52','0000') + tlv('53','986') + tlv('54', valor.toFixed(2))
+    + tlv('58','BR') + tlv('59', sem(CONFIG.pixNome).slice(0,25)) + tlv('60', sem(CONFIG.pixCidade).slice(0,15))
+    + tlv('62', tlv('05','PORTAL')) + '6304';
+  return corpo + crc16(corpo);
+}
+const pay = $('#pay');
+function abrirPix(id){
+  const pl = PLANOS.find(x => x.id === id) || PLANOS[1];
+  const code = pixPayload(pl.valor);
+  $('#pay-t').textContent = 'Plano ' + pl.nome;
+  $('#pay-val').textContent = pl.preco + ' por mês';
+  $('#pay-sub').textContent = 'Criação e configuração do portal incluídas. Você paga só a mensalidade.';
+  $('#pay-code').value = code;
+  $('#pay-key').textContent = CONFIG.pixChave;
+  const box = $('#pay-qr'); box.innerHTML = '';
+  try { new QRCode(box, {text: code, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M}); }
+  catch (_) { box.innerHTML = '<p class="hint" style="line-height:1.4;padding:8px">Use o código copia e cola abaixo.</p>'; }
+  const d = read();
+  let m = `Olá Pablo! Fiz o pagamento via Pix do plano ${pl.nome} (${pl.preco}/mês). Segue o comprovante.`;
+  if (d.empresa) m += '\n\n' + msgAssinar({...d, plano: pl.id});
+  $('#pay-wa').href = waLink(m);
+  $('#pay-copy').textContent = 'Copiar código Pix';
+  pay.showModal();
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-pagar]'); if (b) abrirPix(b.dataset.pagar);
+});
+$('#b-pix').addEventListener('click', () => abrirPix($('#form').elements.plano.value));
+$('#pay-x').addEventListener('click', () => pay.close());
+pay.addEventListener('click', e => { if (e.target === pay) pay.close(); });
+$('#pay-copy').addEventListener('click', async () => {
+  const b = $('#pay-copy'), t = $('#pay-code');
+  try { await navigator.clipboard.writeText(t.value); b.textContent = 'Código copiado'; }
+  catch (_) { t.focus(); t.select(); b.textContent = 'Código selecionado, toque em copiar'; }
+  b.classList.remove('copied'); void b.offsetWidth; b.classList.add('copied');
+});
+
+$('#form').addEventListener('input', update);
+$('#form').addEventListener('submit', e => e.preventDefault());
+$('#b-assinar').addEventListener('click', e => { if (!validar()) e.preventDefault(); });
+$('#b-enviar').addEventListener('click', e => { if (!validar()) e.preventDefault(); });
+
+/* links de contato */
+$$('[data-wa=geral]').forEach(a => a.href = waLink(MSG_GERAL));
+$$('[data-wa=afiliado]').forEach(a => a.href = waLink(MSG_AFILIADO));
+$$('[data-wa=call]').forEach(a => a.href = CONFIG.linkAgenda || waLink(MSG_CALL));
+$('#demo-link').href = CONFIG.portalDemo;
+$$('[data-demo]').forEach(a => a.href = CONFIG.portalDemo);
+$('#num').textContent = CONFIG.whatsappExibicao;
+
+$('#copy').addEventListener('click', async () => {
+  const b = $('#copy'); const txt = CONFIG.whatsappExibicao;
+  try { await navigator.clipboard.writeText(txt); b.textContent = 'Número copiado'; }
+  catch (_) { const r = document.createRange(); r.selectNodeContents($('#num')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = 'Número selecionado'; }
+  b.classList.remove('copied'); void b.offsetWidth; b.classList.add('copied');
+  setTimeout(() => b.textContent = 'Copiar número', 2200);
+});
+
+/* tela de exemplo do topo */
+$('#hero-phone').innerHTML = phoneHTML({empresa:'Padaria Santa Clara', email:'rh@santaclara.com.br', whats:'(11) 99999-9999', prazo:'24', cor:'#16a34a', docs:['RG','CPF','PIS','Carteira de Trabalho','Comprovante de residência','Foto 3x4']});
+
+/* calculadora de tempo: mesma proporção do setor (12h -> 2h) */
+function calc(){
+  const h = parseFloat($('#c-h').value) || 0;
+  const v = parseFloat($('#c-v').value) || 0;
+  [['#c-h','#o-h',x => x + ' h'],['#c-v','#o-v',x => 'R$ ' + x]].forEach(([s,o,f]) => {
+    const el = $(s); el.style.setProperty('--p', ((el.value - el.min) / (el.max - el.min) * 100) + '%'); $(o).textContent = f(el.value);
+  });
+  const res = document.querySelector('.result'); res.classList.remove('bump'); void res.offsetWidth; res.classList.add('bump');
+  const fmt = (n,d=1) => n.toLocaleString('pt-BR',{maximumFractionDigits:d});
+  const depois = h * 2 / 12, eco = h - depois;
+  $('#c-antes').textContent = h ? fmt(h) + ' h' : '-';
+  $('#c-depois').textContent = h ? 'cerca de ' + fmt(depois) + ' h' : '-';
+  $('#b-antes').style.width = '100%';
+  $('#b-depois').style.width = (h ? 100/6 : 0) + '%';
+  $('#c-eco').textContent = h ? 'Você recupera cerca de ' + fmt(eco) + ' horas por mês' : 'Informe as horas por mês';
+  $('#c-din').textContent = h && v ? 'Isso equivale a cerca de R$ ' + fmt(eco*v,0) + ' por mês, ou R$ ' + fmt(eco*v*12,0) + ' por ano, em tempo do RH.' : '';
+}
+$('#c-h').addEventListener('input', calc); $('#c-v').addEventListener('input', calc); calc();
+
+/* efeito de onda ao clicar nos botões */
+document.addEventListener('click', e => {
+  const b = e.target.closest('.btn'); if (!b) return;
+  const r = b.getBoundingClientRect(), s = Math.max(r.width, r.height) * 2;
+  const el = document.createElement('span'); el.className = 'ripple';
+  el.style.cssText = `width:${s}px;height:${s}px;left:${e.clientX - r.left - s/2}px;top:${e.clientY - r.top - s/2}px`;
+  b.appendChild(el); setTimeout(() => el.remove(), 650);
+});
+update();
+</script>
+
+</body></html>
